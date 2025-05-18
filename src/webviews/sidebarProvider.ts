@@ -3,6 +3,7 @@ import { AIService, AiResponse, ConversationMessage } from '../services/aiServic
 import { ConfigurationService } from '../services/configurationService';
 import { getNonce } from '../utilities/nonce';
 import * as path from 'path';
+import * as fs from 'fs';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
     _view?: vscode.WebviewView;
@@ -26,6 +27,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             enableScripts: true,
             localResourceRoots: [
                 vscode.Uri.joinPath(this._context.extensionUri, 'media'),
+                vscode.Uri.joinPath(this._context.extensionUri, 'src', 'webviews', 'sidebar-react'),
                 vscode.Uri.joinPath(this._context.extensionUri, 'dist')
             ]
         };
@@ -62,6 +64,30 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         });
                     }
                     break;
+                    
+                case 'getModelInfo':
+                    const modelInfo = this._configService.getModelInfo() || 'N/A';
+                    if (this._view) {
+                        this._view.webview.postMessage({ 
+                            type: 'modelInfo', 
+                            value: modelInfo
+                        });
+                    }
+                    break;
+                    
+                case 'loadConversation':
+                    const history = this._aiService.getConversationHistory();
+                    if (this._view) {
+                        this._view.webview.postMessage({ 
+                            type: 'loadedConversation', 
+                            value: history
+                        });
+                    }
+                    break;
+                    
+                case 'showSettings':
+                    vscode.commands.executeCommand('workbench.action.openSettings', 'github-ai-assistant');
+                    break;
             }
         });
     }
@@ -83,6 +109,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     }
     
     private _getHtmlForWebview(webview: vscode.Webview) {
+        // Get path to our React app resources
+        const reactAppUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'src', 'webviews', 'sidebar-react')
+        );
+
+        // Get path to CSS resources
         const styleResetUri = webview.asWebviewUri(
             vscode.Uri.joinPath(this._context.extensionUri, 'media', 'reset.css')
         );
@@ -91,105 +123,35 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             vscode.Uri.joinPath(this._context.extensionUri, 'media', 'vscode.css')
         );
         
-        const styleMainUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'main.css')
+        const reactStylesUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'src', 'webviews', 'sidebar-react', 'styles.css')
         );
         
-        const animationCssUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'animations.css')
-        );
-        
+        // Generate a nonce to allow only specific inline scripts
         const nonce = getNonce();
         
+        // Return simplified HTML that loads our React application
         return `<!DOCTYPE html>
             <html lang="en">
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'; img-src ${webview.cspSource} https:; font-src ${webview.cspSource}">
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'nonce-${nonce}'; img-src ${webview.cspSource} https:; font-src ${webview.cspSource}">
                 <link href="${styleResetUri}" rel="stylesheet">
                 <link href="${styleVSCodeUri}" rel="stylesheet">
-                <link href="${styleMainUri}" rel="stylesheet">
-                <link href="${animationCssUri}" rel="stylesheet">
-                <title>GitHub AI Assistant</title>
+                <link href="${reactStylesUri}" rel="stylesheet">
+                <title>AI Chat</title>
             </head>
             <body>
-                <div class="container">
-                    <div class="header">
-                        <h1><span class="logo-icon">🧠</span> GitHub AI Assistant</h1>
-                        <div class="model-info">Model: <span id="model-name">...</span></div>
-                    </div>
-                    
-                    <div class="conversation-container" id="conversation"></div>
-                    
-                    <div class="input-container">
-                        <textarea id="prompt-input" placeholder="Ask a question or request code assistance...".replace(/\n/g, "&#10;")></textarea>
-                        <button id="submit-button" class="pulse-animation">Send</button>
-                    </div>
-                    
-                    <div class="footer">
-                        <button id="clear-button" title="Clear current conversation"><i class="icon">🗑️</i> Clear Chat</button>
-                        <button id="api-key-button" title="Configure your API key"><i class="icon">🔑</i> API Key</button>
-                        <button id="settings-button" title="Show settings"><i class="icon">⚙️</i> Settings</button>
-                    </div>
-                    
-                    <div id="typing-indicator" class="typing-indicator hidden">
-                        <span>AI is typing</span>
-                        <span class="dot"></span>
-                        <span class="dot"></span>
-                        <span class="dot"></span>
-                    </div>
-                </div>
+                <div id="root"></div>
                 
                 <script nonce="${nonce}">
+                    // Initialize the VS Code API for communication
                     const vscode = acquireVsCodeApi();
-
-                    // Type definitions for script
-                    interface ChatMessage {
-                        role: 'user' | 'assistant';
-                        content: string;
-                    }
-
-                    // Message types from extension to webview
-                    interface VsCodeMessageUpdateResponse {
-                        type: 'updateResponse';
-                        value: string;
-                        isError?: boolean;
-                    }
-                    interface VsCodeMessageModelInfo {
-                        type: 'modelInfo';
-                        value: string;
-                    }
-                    interface VsCodeMessageLoadConversation {
-                        type: 'loadedConversation';
-                        value: ChatMessage[];
-                    }
-                    interface VsCodeMessageClear {
-                        type: 'clearConversation';
-                    }
-                    type VsCodeMessage = VsCodeMessageUpdateResponse | VsCodeMessageModelInfo | VsCodeMessageLoadConversation | VsCodeMessageClear;
-
-                    function escapeHtml(unsafeText: string): string {
-                        if (typeof unsafeText !== 'string') return '';
-                        return unsafeText
-                            .replace(/&/g, "&amp;")
-                            .replace(/</g, "&lt;")
-                            .replace(/>/g, "&gt;")
-                            .replace(/"/g, "&quot;")
-                            .replace(/'/g, "&#039;");
-                    }
-
-                    function escapeHtmlAttribute(unsafeText: string): string {
-                        if (typeof unsafeText !== 'string') return '';
-                        return unsafeText
-                            .replace(/&/g, "&amp;")
-                            .replace(/</g, "&lt;")
-                            .replace(/>/g, "&gt;")
-                            .replace(/"/g, "&quot;")
-                            .replace(/'/g, "&#039;")
-                            .replace(/\n/g, "&#10;")
-                            .replace(/\r/g, "");
-                    }
+                </script>
+                
+                <!-- Load the React application bundle -->
+                <script nonce="${nonce}" src="${reactAppUri}/index.js"></script>
 
                     const conversation = document.getElementById('conversation') as HTMLElement;
                     const promptInput = document.getElementById('prompt-input') as HTMLTextAreaElement;
@@ -249,69 +211,51 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         typingIndicator.classList.remove('hidden');
                         
                         const existingLoadingMsg = document.getElementById('loading-message');
-                        if (!existingLoadingMsg) {
-                            const loadingElem = document.createElement('div');
-                            loadingElem.className = 'message assistant loading slide-in';
-                            loadingElem.id = 'loading-message';
-                            loadingElem.innerHTML = 
-                                `<div class="avatar assistant-avatar">🧠</div>` +
-                                `<div class="content"><div class="loading-indicator"><div></div><div></div><div></div></div></div>`;
-                            conversation.appendChild(loadingElem);
-                            conversation.scrollTop = conversation.scrollHeight;
-                        }
                     }
+                });
+                promptInput.addEventListener('input', () => {
+                    promptInput.style.height = 'auto';
+                    promptInput.style.height = (promptInput.scrollHeight) + 'px';
+                });
+                clearButton.addEventListener('click', () => {
+                    vscode.postMessage({ type: 'clearConversation' });
+                });
+                apiKeyButton.addEventListener('click', () => {
+                    vscode.postMessage({ type: 'configureApiKey' });
+                });
+                settingsButton.addEventListener('click', () => {
+                    vscode.postMessage({ type: 'showSettings' });
+                });
 
-                    function addMessageToUI(role: 'user' | 'assistant', content: string): void {
-                        const messageElem = document.createElement('div');
-                        messageElem.className = `message ${role} slide-in`;
-                        
-                        const avatarHtml = role === 'user' ? 
-                            '<div class="avatar user-avatar">👤</div>' : 
-                            '<div class="avatar assistant-avatar">🧠</div>';
+                function handleSubmitQuery() {
+                    const query = promptInput.value.trim();
+                    if (!query || isProcessing) return;
 
-                        conversationHistory.push({ role, content });
+                    isProcessing = true;
+                    submitButton.disabled = true;
+                    addMessageToUI('user', query);
+                    vscode.postMessage({ type: 'submitQuery', value: query });
+                    promptInput.value = '';
+                    promptInput.style.height = 'auto';
+                    typingIndicator.classList.remove('hidden');
+                    
+                    const existingLoadingMsg = document.getElementById('loading-message');
+                }
 
-                        let formattedContent = '';
-                        const codeBlockRegex = new RegExp("```(.*?)\\n([\\s\\S]*?)```", "g");
-                        let lastIndex = 0;
+                function addMessageToUI(role: 'user' | 'assistant', content: string): void {
+                    const messageElem = document.createElement('div');
+                    messageElem.className = 'message ' + role + ' slide-in';
+                    
+                    const avatarHtml = role === 'user' ? 
+                        '<div class="avatar user-avatar">👤</div>' : 
+                        '<div class="avatar assistant-avatar">🧠</div>';
 
-                        for (const match of content.matchAll(codeBlockRegex)) {
-                            const language = match[1]?.trim().toLowerCase() || 'plaintext';
-                            const codeSnippet = match[2].trim();
-                            const startIndex = match.index || 0;
+                    conversationHistory.push({ role, content });
 
-                            formattedContent += escapeHtml(content.substring(lastIndex, startIndex));
-                            const codeBlockId = `code-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-                            
-                            formattedContent += 
-                                `<div class="code-block-container">` +
-                                    `<div class="code-block-header">` +
-                                        `<span>${escapeHtml(language)}</span>` +
-                                        `<div>` +
-                                            `<button class="code-action-button copy-code-btn" data-target="#${codeBlockId}" title="Copy code"><i class="icon">📋</i> Copy</button>` +
-                                            `<button class="code-action-button insert-code-btn" data-code="${escapeHtmlAttribute(codeSnippet)}" title="Insert code into editor"><i class="icon">📝</i> Insert</button>` +
-                                        `</div>` +
-                                    `</div>` +
-                                    `<pre id="${codeBlockId}"><code>${escapeHtml(codeSnippet)}</code></pre>` +
-                                `</div>`;
-                            lastIndex = startIndex + match[0].length;
-                        }
-                        formattedContent += escapeHtml(content.substring(lastIndex));
-                        
-                        if (lastIndex === 0) {
-                            formattedContent = formattedContent.replace(/\n/g, '<br>');
-                        }
-
-                        messageElem.innerHTML = `${avatarHtml}<div class="content">${formattedContent}</div>`;
-                        conversation.appendChild(messageElem);
-                        conversation.scrollTop = conversation.scrollHeight;
-
-                        messageElem.querySelectorAll('.copy-code-btn').forEach(button => {
-                            button.addEventListener('click', (e) => {
-                                const targetSelector = (e.currentTarget as HTMLElement).dataset.target;
-                                if (targetSelector) {
-                                    const codeElement = messageElem.querySelector(targetSelector + ' code') as HTMLElement;
-                                    if (codeElement && codeElement.textContent) {
+                    let formattedContent = '';
+                    const codeBlockRegex = /```(.*?)\n([\s\S]*?)```/g; 
+                    let lastIndex = 0;
+                    let match;
                                         vscode.postMessage({ type: 'copyToClipboard', value: codeElement.textContent });
                                         const originalText = button.innerHTML;
                                         button.innerHTML = '<i class="icon">✅</i> Copied!';
@@ -343,7 +287,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                                 if (message.isError) {
                                     addMessageToUI('assistant', `⚠️ Error: ${escapeHtml(String(message.value))}`);
                                 } else {
-                                    addMessageToUI('assistant', message.value);
+                                    addMessageToUI('assistant', String(message.value));
                                 }
                                 isProcessing = false;
                                 submitButton.disabled = false;
@@ -360,7 +304,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                                 conversation.innerHTML = '';
                                 conversationHistory = [];
                                 if (message.value && Array.isArray(message.value)) {
-                                    message.value.forEach(msg => addMessageToUI(msg.role, msg.content));
+                                    message.value.forEach((msg: ChatMessage) => addMessageToUI(msg.role, msg.content));
                                 }
                                 break;
                         }
@@ -369,6 +313,4 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             </body>
         </html>
     `;
-}
-}
 }
