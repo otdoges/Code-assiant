@@ -70,7 +70,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         if (this._view) {
             this._view.webview.postMessage({ 
                 type: 'updateResponse', 
-                value: response.text,
+                value: String(response.text), // Ensure value is a string
                 isError: response.error
             });
         }
@@ -123,7 +123,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     <div class="conversation-container" id="conversation"></div>
                     
                     <div class="input-container">
-                        <textarea id="prompt-input" placeholder="Ask a question or request code assistance..."></textarea>
+                        <textarea id="prompt-input" placeholder="Ask a question or request code assistance...".replace(/\n/g, "&#10;")></textarea>
                         <button id="submit-button" class="pulse-animation">Send</button>
                     </div>
                     
@@ -288,7 +288,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 });
                 
                 // Functions
-                function submitQuery() {
+                function submitQuery(): void {
                     const query = promptInput.value.trim();
                     if (!query || isProcessing) {
                         return;
@@ -321,128 +321,16 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     conversation.appendChild(loadingElem);
                     conversation.scrollTop = conversation.scrollHeight;
                 }
-                
-                function addMessageToUI(role: 'user' | 'assistant', content: string): void {
-                    const messageElem = document.createElement('div');
-                    messageElem.className = `message ${role} slide-in`;
-                    
-                    // Add avatar/icon
-                    let avatarHtml = '';
-                    if (role === 'user') {
-                        avatarHtml = '<div class="avatar user-avatar">👤</div>';
-                    } else if (role === 'assistant') {
-                        avatarHtml = '<div class="avatar assistant-avatar">🧠</div>';
-                    }
-                    
-                    // Format the content for markdown
-                    let formattedContent = content;
-                    
-                    // Store in history
-                    conversationHistory.push({ role, content });
-                    
-                    // Add timestamp
-                    const timestamp = new Date().toLocaleTimeString();
-                    const timestampHtml = `<div class="timestamp">${timestamp}</div>`;
-                    
-                    // Replace code blocks with syntax highlighting
-                    formattedContent = formattedContent.replace(/```([a-zA-Z0-9]*)?\n?([\s\S]*?)```/g, (match, lang, code) => {
-                        const language = lang ? lang.trim() : '';
-                        const container = document.createElement('div');
-                        container.className = 'code-block-container';
-                        
-                        const headerDiv = document.createElement('div');
-                        headerDiv.className = 'code-header';
-                        headerDiv.innerHTML = `<span class="code-language">${language || 'code'}</span>`;
-                        
-                        const codeBlock = document.createElement('pre');
-                        codeBlock.className = 'code-block';
-                        if (language) {
-                            codeBlock.className += ` language-${language}`;
-                        }
-                        codeBlock.textContent = code.trim();
-                        
-                        const copyButton = document.createElement('button');
-                        copyButton.className = 'copy-button';
-                        copyButton.innerHTML = '<span class="button-icon">📋</span> Copy';
-                        copyButton.onclick = function() {
-                            vscode.postMessage({
-                                type: 'copyToClipboard',
-                                value: code.trim()
-                            });
-                            copyButton.innerHTML = '<span class="button-icon">✓</span> Copied!';
-                            copyButton.classList.add('copied');
-                            setTimeout(() => {
-                                copyButton.innerHTML = '<span class="button-icon">📋</span> Copy';
-                                copyButton.classList.remove('copied');
-                            }, 2000);
-                        };
-                        
-                        const insertButton = document.createElement('button');
-                        insertButton.className = 'insert-button';
-                        insertButton.innerHTML = '<span class="button-icon">📝</span> Insert';
-                        insertButton.onclick = function() {
-                            vscode.postMessage({
-                                type: 'insertToEditor',
-                                value: code.trim()
-                            });
-                            insertButton.classList.add('inserted');
-                            insertButton.innerHTML = '<span class="button-icon">✓</span> Inserted!';
-                            setTimeout(() => {
-                                insertButton.innerHTML = '<span class="button-icon">📝</span> Insert';
-                                insertButton.classList.remove('inserted');
-                            }, 2000);
-                        };
-                        
-                        const buttonContainer = document.createElement('div');
-                        buttonContainer.className = 'code-buttons';
-                        buttonContainer.appendChild(copyButton);
-                        buttonContainer.appendChild(insertButton);
-                        
-                        container.appendChild(headerDiv);
-                        container.appendChild(codeBlock);
-                        container.appendChild(buttonContainer);
-                        
-                        return container.outerHTML;
-                    });
-                    
-                    // Replace inline code
-                    formattedContent = formattedContent.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
-                    
-                    // Replace URLs with hyperlinks
-                    formattedContent = formattedContent.replace(/\b(https?:\/\/[^\s]+)\b/g, '<a href="$1" class="link" target="_blank">$1</a>');
-                    
-                    // Add message with avatar and timestamp
-                    messageElem.innerHTML = `
-                        ${avatarHtml}
-                        <div class="message-content">${formattedContent}</div>
-                        ${timestampHtml}
-                    `;
-                    
-                    conversation.appendChild(messageElem);
-                    
-                    // Smooth scroll to bottom
-                    setTimeout(() => {
-                        conversation.scrollTop = conversation.scrollHeight;
-                        // Remove animation class after transition completes
-                        setTimeout(() => {
-                            messageElem.classList.remove('slide-in');
-                        }, 500);
-                    }, 50);
+            });
+        });
+
+        messageElem.querySelectorAll('.insert-code-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const codeToInsert = (e.currentTarget as HTMLElement).dataset.code;
+                if (codeToInsert) {
+                    vscode.postMessage({ type: 'insertToEditor', value: codeToInsert });
                 }
                 
-                // Handle messages from the extension
-                window.addEventListener('message', (event: MessageEvent<VsCodeMessage>) => {
-                    const message = event.data; // message is now of type VsCodeMessage
-                    
-                    switch (message.type) {
-                        case 'updateResponse':
-                            // Remove loading indicator
-                            const loadingElem = document.getElementById('loading-message');
-                            if (loadingElem) {
-                                loadingElem.remove();
-                            }
-                            
-                            // Hide typing indicator
                             typingIndicator.classList.add('hidden');
                             
                             // Add assistant message
