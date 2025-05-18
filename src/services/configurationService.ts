@@ -26,8 +26,8 @@ export class ConfigurationService {
         config.update('defaultModel', model, vscode.ConfigurationTarget.Global);
     }
 
-    private getConfiguration(): vscode.WorkspaceConfiguration {
-        return vscode.workspace.getConfiguration('github-ai-assistant');
+    public getConfiguration(): vscode.WorkspaceConfiguration {
+        return vscode.workspace.getConfiguration('code-explorer');
     }
 
     public getSelectedModel(): string {
@@ -54,9 +54,5 @@ export class ConfigurationService {
 
     public async setTemperature(temperature: number): Promise<void> {
         await this.getConfiguration().update('temperature', temperature, vscode.ConfigurationTarget.Global);
-    }
-
-    public async setSaveHistory(save: boolean): Promise<void> {
-        await this.getConfiguration().update('saveHistory', save, vscode.ConfigurationTarget.Global);
     }
 }

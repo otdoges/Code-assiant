@@ -89,11 +89,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     break;
                     
                 case 'getModelInfo':
-                    // Get model information safely
+                    // Get model information from configuration
                     let modelInfo = 'N/A';
                     try {
-                        // Safely access whatever method is available in ConfigurationService
-                        modelInfo = (this._configService as any).getCurrentModel?.() || 'N/A';
+                        modelInfo = this._configService.getSelectedModel() || 'N/A';
                     } catch (error) {
                         console.error('Error getting model info:', error);
                     }
