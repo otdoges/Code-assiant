@@ -66,7 +66,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     break;
                     
                 case 'getModelInfo':
-                    const modelInfo = this._configService.getModelInfo() || 'N/A';
+                    // Using optional chaining since the method name might vary
+                    const modelInfo = this._configService.getModelName?.() || 'N/A';
                     if (this._view) {
                         this._view.webview.postMessage({ 
                             type: 'modelInfo', 
@@ -152,165 +153,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 
                 <!-- Load the React application bundle -->
                 <script nonce="${nonce}" src="${reactAppUri}/index.js"></script>
-
-                    const conversation = document.getElementById('conversation') as HTMLElement;
-                    const promptInput = document.getElementById('prompt-input') as HTMLTextAreaElement;
-                    const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
-                    const clearButton = document.getElementById('clear-button') as HTMLButtonElement;
-                    const apiKeyButton = document.getElementById('api-key-button') as HTMLButtonElement;
-                    const settingsButton = document.getElementById('settings-button') as HTMLButtonElement;
-                    const typingIndicator = document.getElementById('typing-indicator') as HTMLElement;
-                    const modelNameElement = document.getElementById('model-name') as HTMLElement;
-
-                    let conversationHistory: ChatMessage[] = [];
-                    let isProcessing = false;
-
-                    function requestModelInfo() {
-                        vscode.postMessage({ type: 'getModelInfo' });
-                    }
-                    function requestLoadConversation() {
-                        vscode.postMessage({ type: 'loadConversation' });
-                    }
-
-                    requestModelInfo();
-                    requestLoadConversation();
-
-                    submitButton.addEventListener('click', handleSubmitQuery);
-                    promptInput.addEventListener('keydown', (e: KeyboardEvent) => {
-                        if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
-                            e.preventDefault();
-                            handleSubmitQuery();
-                        } else if (e.key === 'Enter' && e.ctrlKey) {
-                             handleSubmitQuery();
-                        }
-                    });
-                    promptInput.addEventListener('input', () => {
-                        promptInput.style.height = 'auto';
-                        promptInput.style.height = (promptInput.scrollHeight) + 'px';
-                    });
-                    clearButton.addEventListener('click', () => {
-                        vscode.postMessage({ type: 'clearConversation' });
-                    });
-                    apiKeyButton.addEventListener('click', () => {
-                        vscode.postMessage({ type: 'configureApiKey' });
-                    });
-                    settingsButton.addEventListener('click', () => {
-                        vscode.postMessage({ type: 'showSettings' });
-                    });
-
-                    function handleSubmitQuery() {
-                        const query = promptInput.value.trim();
-                        if (!query || isProcessing) return;
-
-                        isProcessing = true;
-                        submitButton.disabled = true;
-                        addMessageToUI('user', query);
-                        vscode.postMessage({ type: 'submitQuery', value: query });
-                        promptInput.value = '';
-                        promptInput.style.height = 'auto';
-                        typingIndicator.classList.remove('hidden');
-                        
-                        const existingLoadingMsg = document.getElementById('loading-message');
-                    }
-                });
-                promptInput.addEventListener('input', () => {
-                    promptInput.style.height = 'auto';
-                    promptInput.style.height = (promptInput.scrollHeight) + 'px';
-                });
-                clearButton.addEventListener('click', () => {
-                    vscode.postMessage({ type: 'clearConversation' });
-                });
-                apiKeyButton.addEventListener('click', () => {
-                    vscode.postMessage({ type: 'configureApiKey' });
-                });
-                settingsButton.addEventListener('click', () => {
-                    vscode.postMessage({ type: 'showSettings' });
-                });
-
-                function handleSubmitQuery() {
-                    const query = promptInput.value.trim();
-                    if (!query || isProcessing) return;
-
-                    isProcessing = true;
-                    submitButton.disabled = true;
-                    addMessageToUI('user', query);
-                    vscode.postMessage({ type: 'submitQuery', value: query });
-                    promptInput.value = '';
-                    promptInput.style.height = 'auto';
-                    typingIndicator.classList.remove('hidden');
-                    
-                    const existingLoadingMsg = document.getElementById('loading-message');
-                }
-
-                function addMessageToUI(role: 'user' | 'assistant', content: string): void {
-                    const messageElem = document.createElement('div');
-                    messageElem.className = 'message ' + role + ' slide-in';
-                    
-                    const avatarHtml = role === 'user' ? 
-                        '<div class="avatar user-avatar">👤</div>' : 
-                        '<div class="avatar assistant-avatar">🧠</div>';
-
-                    conversationHistory.push({ role, content });
-
-                    let formattedContent = '';
-                    const codeBlockRegex = /```(.*?)\n([\s\S]*?)```/g; 
-                    let lastIndex = 0;
-                    let match;
-                                        vscode.postMessage({ type: 'copyToClipboard', value: codeElement.textContent });
-                                        const originalText = button.innerHTML;
-                                        button.innerHTML = '<i class="icon">✅</i> Copied!';
-                                        setTimeout(() => { button.innerHTML = originalText; }, 2000);
-                                    }
-                                }
-                            });
-                        });
-                        messageElem.querySelectorAll('.insert-code-btn').forEach(button => {
-                            button.addEventListener('click', (e) => {
-                                const codeToInsert = (e.currentTarget as HTMLElement).dataset.code;
-                                if (codeToInsert) {
-                                    vscode.postMessage({ type: 'insertToEditor', value: codeToInsert });
-                                }
-                            });
-                        });
-                    }
-
-                    window.addEventListener('message', (event: MessageEvent<VsCodeMessage>) => {
-                        const message = event.data;
-                        const loadingMessageElement = document.getElementById('loading-message');
-                        if (loadingMessageElement && message.type === 'updateResponse') {
-                            loadingMessageElement.remove();
-                        }
-
-                        switch (message.type) {
-                            case 'updateResponse':
-                                typingIndicator.classList.add('hidden');
-                                if (message.isError) {
-                                    addMessageToUI('assistant', `⚠️ Error: ${escapeHtml(String(message.value))}`);
-                                } else {
-                                    addMessageToUI('assistant', String(message.value));
-                                }
-                                isProcessing = false;
-                                submitButton.disabled = false;
-                                promptInput.focus();
-                                break;
-                            case 'clearConversation':
-                                conversation.innerHTML = '';
-                                conversationHistory = [];
-                                break;
-                            case 'modelInfo':
-                                modelNameElement.textContent = message.value || 'N/A';
-                                break;
-                            case 'loadedConversation':
-                                conversation.innerHTML = '';
-                                conversationHistory = [];
-                                if (message.value && Array.isArray(message.value)) {
-                                    message.value.forEach((msg: ChatMessage) => addMessageToUI(msg.role, msg.content));
-                                }
-                                break;
-                        }
-                    });
-                </script>
             </body>
         </html>
     `;
+    }
 }
