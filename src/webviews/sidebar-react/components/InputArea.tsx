@@ -45,15 +45,18 @@ const InputArea: React.FC<InputAreaProps> = ({ onSubmit, disabled }) => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask anything... (Ctrl+Enter to submit)"
+                placeholder="Ask me anything..."
                 disabled={disabled}
             />
             <button
                 id="submit-button"
                 onClick={handleSubmit}
-                disabled={disabled || !inputValue.trim()}
+                disabled={!inputValue.trim() || disabled}
+                aria-label="Send message"
             >
-                Send
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/>
+                </svg>
             </button>
         </div>
     );

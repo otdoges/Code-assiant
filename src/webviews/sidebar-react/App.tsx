@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChatMessage } from './types';
+import { ChatMessage, Settings } from './types';
 import Conversation from './components/Conversation';
 import InputArea from './components/InputArea';
 import HeaderToolbar from './components/HeaderToolbar';
+import SettingsPanel from './components/SettingsPanel';
 import { 
     getVSCodeApi, 
     copyToClipboard, 
@@ -21,6 +22,7 @@ const App: React.FC = () => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const [modelName, setModelName] = useState('N/A');
+    const [showSettings, setShowSettings] = useState(false);
 
     // Handle messages from the extension
     const handleMessageFromExtension = useCallback((event: MessageEvent) => {
@@ -102,7 +104,34 @@ const App: React.FC = () => {
     }, []);
     
     const handleShowSettings = useCallback(() => {
-        showSettingsApi();
+        setShowSettings(true);
+    }, []);
+    
+    const handleCloseSettings = useCallback(() => {
+        setShowSettings(false);
+    }, []);
+    
+    const handleSaveSettings = useCallback((settings: Settings) => {
+        // Send settings to the extension
+        const { apiKey, selectedModel, temperature, saveHistory } = settings;
+        
+        // Update API key if provided
+        if (apiKey) {
+            configureApiKeyApi(apiKey);
+        }
+        
+        // Post other settings to the extension
+        getVSCodeApi().postMessage({
+            type: 'updateSettings',
+            value: {
+                selectedModel,
+                temperature,
+                saveHistory
+            }
+        });
+        
+        // Update the model name locally
+        setModelName(selectedModel);
     }, []);
 
     return (
@@ -125,6 +154,13 @@ const App: React.FC = () => {
                 onSubmit={handleSubmitQuery}
                 disabled={isProcessing}
             />
+            
+            <SettingsPanel
+                isVisible={showSettings}
+                onClose={handleCloseSettings}
+                modelName={modelName}
+                onSaveSettings={handleSaveSettings}
+            />  
         </div>
     );
 };

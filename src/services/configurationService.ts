@@ -48,6 +48,10 @@ export class ConfigurationService {
         await this.getConfiguration().update('selectedModel', model, vscode.ConfigurationTarget.Global);
     }
 
+    public async setSaveHistory(saveHistory: boolean): Promise<void> {
+        await this.getConfiguration().update('saveHistory', saveHistory, vscode.ConfigurationTarget.Global);
+    }
+
     public async setTemperature(temperature: number): Promise<void> {
         await this.getConfiguration().update('temperature', temperature, vscode.ConfigurationTarget.Global);
     }

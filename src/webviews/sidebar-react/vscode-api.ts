@@ -43,8 +43,8 @@ export function clearConversation(): void {
     postMessageToExtension('clearConversation');
 }
 
-export function configureApiKey(): void {
-    postMessageToExtension('configureApiKey');
+export function configureApiKey(apiKey?: string): void {
+    postMessageToExtension('configureApiKey', apiKey);
 }
 
 export function showSettings(): void {

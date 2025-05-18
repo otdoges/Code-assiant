@@ -75,3 +75,17 @@ export interface HeaderToolbarProps {
     onConfigureApiKey: () => void;
     onShowSettings: () => void;
 }
+
+export interface SettingsPanelProps {
+    isVisible: boolean;
+    onClose: () => void;
+    modelName: string;
+    onSaveSettings: (settings: Settings) => void;
+}
+
+export interface Settings {
+    apiKey: string;
+    selectedModel: string;
+    temperature: number;
+    saveHistory: boolean;
+}

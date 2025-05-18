@@ -15,7 +15,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onCopy, onInsert }) 
     return (
         <div className={`message ${role}`} id={messageId}>
             <div className={`avatar ${role}-avatar`}>
-                {role === 'user' ? '👤' : '🧠'}
+                {role === 'user' ? '👤' : '🤖'}
             </div>
             <div className="content">
                 {blocks.length === 0 ? (

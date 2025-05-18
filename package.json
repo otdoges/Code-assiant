@@ -4,6 +4,10 @@
   "description": "AI coding assistant powered by GitHub marketplace models",
   "version": "0.2.1",
   "author": "otdoges",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/otdoges/code-explorer.git"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -44,7 +48,7 @@
         }
       ]
     },
-    "v  iews": {
+    "views": {
       "code-explorer": [
         {
           "type": "webview",

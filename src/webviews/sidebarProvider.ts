@@ -48,7 +48,30 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     break;
                     
                 case 'configureApiKey':
-                    vscode.commands.executeCommand('github-ai-assistant.configureAPIKey');
+                    if (data.value) {
+                        // If API key is provided directly, use it
+                        this._configService.setApiKey(data.value);
+                        vscode.window.showInformationMessage('API key updated successfully');
+                    } else {
+                        // Otherwise show the command palette to configure it
+                        vscode.commands.executeCommand('code-explorer.configureAPIKey');
+                    }
+                    break;
+                
+                case 'updateSettings':
+                    if (data.value) {
+                        const { selectedModel, temperature, saveHistory } = data.value;
+                        if (selectedModel) {
+                            this._configService.setSelectedModel(selectedModel);
+                        }
+                        if (temperature !== undefined) {
+                            this._configService.setTemperature(temperature);
+                        }
+                        if (saveHistory !== undefined) {
+                            this._configService.getConfiguration().update('saveHistory', saveHistory, vscode.ConfigurationTarget.Global);
+                        }
+                        vscode.window.showInformationMessage('Settings updated successfully');
+                    }
                     break;
                     
                 case 'copyToClipboard':
