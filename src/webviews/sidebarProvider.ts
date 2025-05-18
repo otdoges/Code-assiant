@@ -115,7 +115,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     break;
                     
                 case 'showSettings':
-                    vscode.commands.executeCommand('workbench.action.openSettings', 'github-ai-assistant');
+                    vscode.commands.executeCommand('code-explorer.showSettings');
                     break;
             }
         });

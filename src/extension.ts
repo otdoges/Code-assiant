@@ -13,14 +13,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register sidebar webview
     const sidebarView = vscode.window.registerWebviewViewProvider(
-        'github-ai-assistant-sidebar',
+        'code-explorer.sidebar',
         sidebarProvider
     );
     context.subscriptions.push(sidebarView);
 
     // Register commands
     context.subscriptions.push(
-        vscode.commands.registerCommand('github-ai-assistant.askAI', async () => {
+        vscode.commands.registerCommand('code-explorer.showSidebar', async () => {
             const editor = vscode.window.activeTextEditor;
             if (!editor) {
                 vscode.window.showInformationMessage('Open a file to use AI Assistant');
@@ -65,7 +65,12 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }),
 
-        vscode.commands.registerCommand('github-ai-assistant.configureAPIKey', async () => {
+        vscode.commands.registerCommand('code-explorer.showSettings', async () => {
+            // Open the VS Code settings UI with our extension's settings
+            await vscode.commands.executeCommand('workbench.action.openSettings', 'code-explorer');
+        }),
+
+        vscode.commands.registerCommand('code-explorer.configureAPIKey', async () => {
             const apiKey = await vscode.window.showInputBox({
                 ignoreFocusOut: true,
                 password: true,
