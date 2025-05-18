@@ -5,21 +5,17 @@ const path = require('path');
 
 /**@type {import('webpack').Configuration}*/
 const config = {
-  target: 'node',
+  target: 'web',
   mode: 'development',
-  entry: './src/extension.ts',
+  entry: './src/webviews/sidebar-react/index.tsx',
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'extension.js',
-    libraryTarget: 'commonjs2',
-    devtoolModuleFilenameTemplate: '../[resource-path]'
+    path: path.resolve(__dirname, 'src/webviews/sidebar-react'),
+    filename: 'index.js',
+    libraryTarget: 'commonjs2'
   },
   devtool: 'source-map',
-  externals: {
-    vscode: 'commonjs vscode'
-  },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx']
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
   },
   module: {
     rules: [
@@ -36,8 +32,15 @@ const config = {
             }
           }
         ]
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
       }
     ]
+  },
+  externals: {
+    vscode: 'commonjs vscode'
   }
 };
 

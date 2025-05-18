@@ -66,8 +66,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     break;
                     
                 case 'getModelInfo':
-                    // Using optional chaining since the method name might vary
-                    const modelInfo = this._configService.getModelName?.() || 'N/A';
+                    // Get model information safely
+                    let modelInfo = 'N/A';
+                    try {
+                        // Safely access whatever method is available in ConfigurationService
+                        modelInfo = (this._configService as any).getCurrentModel?.() || 'N/A';
+                    } catch (error) {
+                        console.error('Error getting model info:', error);
+                    }
                     if (this._view) {
                         this._view.webview.postMessage({ 
                             type: 'modelInfo', 
