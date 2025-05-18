@@ -1,8 +1,8 @@
 {
-  "name": "github-ai-assistant",
-  "displayName": "GitHub AI Assistant",
+  "name": "code-explorer",
+  "displayName": "Code Explorer",
   "description": "AI coding assistant powered by GitHub marketplace models",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "otdoges",
   "engines": {
     "vscode": "^1.80.0"
@@ -15,22 +15,22 @@
   "contributes": {
     "commands": [
       {
-        "command": "github-ai-assistant.showSidebar",
-        "title": "Show GitHub AI Assistant",
+        "command": "code-explorer.showSidebar",
+        "title": "Show Code Explorer",
         "icon": "$(comment-discussion)"
       },
       {
-        "command": "github-ai-assistant.clearConversation",
+        "command": "code-explorer.clearConversation",
         "title": "Clear Conversation",
         "icon": "$(trash)"
       },
       {
-        "command": "github-ai-assistant.enhancePrompt",
+        "command": "code-explorer.enhancePrompt",
         "title": "Enhance Prompt",
         "icon": "$(sparkle)"
       },
       {
-        "command": "github-ai-assistant.showSettings",
+        "command": "code-explorer.showSettings",
         "title": "Show Settings",
         "icon": "$(gear)"
       }
@@ -38,31 +38,31 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "github-ai-assistant",
-          "title": "GitHub AI Assistant",
+          "id": "code-explorer",
+          "title": "Code Explorer",
           "icon": "media/icon.svg"
         }
       ]
     },
-    "views": {
-      "github-ai-assistant": [
+    "v  iews": {
+      "code-explorer": [
         {
           "type": "webview",
-          "id": "github-ai-assistant.sidebar",
-          "name": "GitHub AI Assistant",
+          "id": "code-explorer.sidebar",
+          "name": "Code Explorer",
           "icon": "media/icon.svg"
         }
       ]
     },
     "configuration": {
-      "title": "GitHub AI Assistant",
+      "title": "Code Explorer",
       "properties": {
-        "github-ai-assistant.githubToken": {
+        "code-explorer.githubToken": {
           "type": "string",
           "default": "",
           "description": "Your GitHub Personal Access Token (PAT) with 'models:read' permission. This token will be sent to a Microsoft service for model inference."
         },
-        "github-ai-assistant.selectedModel": {
+        "code-explorer.selectedModel": {
           "type": "string",
           "default": "openai/o4-mini",
           "enum": [
@@ -79,14 +79,14 @@
           ],
           "description": "Select the AI model to use for chat completions."
         },
-        "github-ai-assistant.temperature": {
+        "code-explorer.temperature": {
           "type": "number",
           "default": 0.7,
           "minimum": 0,
           "maximum": 1,
           "description": "Controls the randomness of the output. Lower values (e.g., 0.2) make the output more focused and deterministic, higher values (e.g., 0.8) make it more creative."
         },
-        "github-ai-assistant.saveHistory": {
+        "code-explorer.saveHistory": {
           "type": "boolean",
           "default": true,
           "description": "Enable or disable saving of conversation history locally."

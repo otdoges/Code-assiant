@@ -169,6 +169,27 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     // Union type for messages received from the extension
                     type VsCodeMessage = VsCodeMessageUpdateResponse | VsCodeMessageModelInfo | VsCodeMessageLoadConversation | VsCodeMessageClear;
                     
+                    // Helper function to escape HTML (important for security)
+                    function escapeHtml(unsafeText: string): string {
+                        return unsafeText
+                            .replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;")
+                            .replace(/"/g, "&quot;")
+                            .replace(/'/g, "&#039;");
+                    }
+
+                    function escapeHtmlAttribute(unsafeText: string): string {
+                        return unsafeText
+                            .replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;")
+                            .replace(/"/g, "&quot;")
+                            .replace(/'/g, "&#039;")
+                            .replace(/\n/g, "&#10;") // Use &#10; for newline in attribute
+                            .replace(/\r/g, ""); // Remove carriage returns
+                    }
+                    
                     // Elements
                     const conversation = document.getElementById('conversation') as HTMLElement;
                     const promptInput = document.getElementById('prompt-input') as HTMLTextAreaElement;
@@ -361,7 +382,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                             // Add error message
                             const errorElem = document.createElement('div');
                             errorElem.className = 'message error';
-                            errorElem.innerHTML = `<div class="error-icon">⚠️</div><div class="error-message">${message.error}</div>`;
+                            errorElem.innerHTML = `<div class="error-icon">⚠️</div><div class="error-message">${escapeHtml(String(message.error || 'An unknown error occurred'))}</div>`;
                             conversation.appendChild(errorElem);
                             conversation.scrollTop = conversation.scrollHeight;
                             break;
