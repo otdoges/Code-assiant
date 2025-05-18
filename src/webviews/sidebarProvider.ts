@@ -356,21 +356,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                                 // Clear existing conversation display
                                 conversation.innerHTML = '';
                                 
-                                // Add all messages to UI
-                                message.conversation.forEach(msg => {
-                                    addMessageToUI(msg.role, msg.content);
-                                });
-                            }
-                            break;
-                            
-                        case 'error':
-                            // Show error message
-                            const loadingElement = document.getElementById('loading-message');
-                            if (loadingElement) {
-                                loadingElement.remove();
-                            }
-                            typingIndicator.classList.add('hidden');
-                            isProcessing = false;
                             submitButton.disabled = false;
                             
                             // Add error message
@@ -385,4 +370,5 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             </script>
         </body>
         </html>`;
+}
 }
