@@ -150,27 +150,27 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         content: string;
                     }
 
+                    // Message types from extension to webview
                     interface VsCodeMessageUpdateResponse {
                         type: 'updateResponse';
                         value: string;
                         isError?: boolean;
                     }
                     interface VsCodeMessageModelInfo {
-                        type: 'updateModelInfo'; // Received from extension
+                        type: 'modelInfo';
                         value: string;
                     }
                     interface VsCodeMessageLoadConversation {
-                        type: 'loadConversation'; // Received from extension
+                        type: 'loadedConversation';
                         value: ChatMessage[];
                     }
                     interface VsCodeMessageClear {
-                        type: 'clearConversation'; // Received from extension
+                        type: 'clearConversation';
                     }
-                    // Union type for messages received from the extension
                     type VsCodeMessage = VsCodeMessageUpdateResponse | VsCodeMessageModelInfo | VsCodeMessageLoadConversation | VsCodeMessageClear;
-                    
-                    // Helper function to escape HTML (important for security)
+
                     function escapeHtml(unsafeText: string): string {
+                        if (typeof unsafeText !== 'string') return '';
                         return unsafeText
                             .replace(/&/g, "&amp;")
                             .replace(/</g, "&lt;")
@@ -180,17 +180,17 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     }
 
                     function escapeHtmlAttribute(unsafeText: string): string {
+                        if (typeof unsafeText !== 'string') return '';
                         return unsafeText
                             .replace(/&/g, "&amp;")
                             .replace(/</g, "&lt;")
                             .replace(/>/g, "&gt;")
                             .replace(/"/g, "&quot;")
                             .replace(/'/g, "&#039;")
-                            .replace(/\n/g, "&#10;") // Use &#10; for newline in attribute
-                            .replace(/\r/g, ""); // Remove carriage returns
+                            .replace(/\n/g, "&#10;")
+                            .replace(/\r/g, "");
                     }
-                    
-                    // Elements
+
                     const conversation = document.getElementById('conversation') as HTMLElement;
                     const promptInput = document.getElementById('prompt-input') as HTMLTextAreaElement;
                     const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
@@ -198,198 +198,177 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     const apiKeyButton = document.getElementById('api-key-button') as HTMLButtonElement;
                     const settingsButton = document.getElementById('settings-button') as HTMLButtonElement;
                     const typingIndicator = document.getElementById('typing-indicator') as HTMLElement;
-                    const modelName = document.getElementById('model-name') as HTMLElement;
-                    
-                    // Initial state
+                    const modelNameElement = document.getElementById('model-name') as HTMLElement;
+
                     let conversationHistory: ChatMessage[] = [];
                     let isProcessing = false;
-                    
-                    // Get selected model info
-                    function updateModelInfo() {
-                        vscode.postMessage({
-                            type: 'getModelInfo'
-                        });
+
+                    function requestModelInfo() {
+                        vscode.postMessage({ type: 'getModelInfo' });
                     }
-                    
-                    // Initialize
-                    updateModelInfo();
-                    loadSavedConversation();
-                    
-                    function loadSavedConversation() {
-                        vscode.postMessage({
-                            type: 'loadConversation'
-                        });
+                    function requestLoadConversation() {
+                        vscode.postMessage({ type: 'loadConversation' });
                     }
-                    
-                    // Add event listeners
-                    submitButton.addEventListener('click', submitQuery);
+
+                    requestModelInfo();
+                    requestLoadConversation();
+
+                    submitButton.addEventListener('click', handleSubmitQuery);
                     promptInput.addEventListener('keydown', (e: KeyboardEvent) => {
-                        if (e.key === 'Enter' && e.ctrlKey) {
-                            submitQuery();
+                        if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
                             e.preventDefault();
+                            handleSubmitQuery();
+                        } else if (e.key === 'Enter' && e.ctrlKey) {
+                             handleSubmitQuery();
                         }
                     });
-                    
-                    // Auto resize textarea as user types
                     promptInput.addEventListener('input', () => {
                         promptInput.style.height = 'auto';
                         promptInput.style.height = (promptInput.scrollHeight) + 'px';
                     });
-                    
                     clearButton.addEventListener('click', () => {
-                        vscode.postMessage({
-                            type: 'clearConversation'
-                        });
+                        vscode.postMessage({ type: 'clearConversation' });
                     });
-                    
                     apiKeyButton.addEventListener('click', () => {
-                        vscode.postMessage({
-                            type: 'configureApiKey'
-                        });
+                        vscode.postMessage({ type: 'configureApiKey' });
                     });
-                    
                     settingsButton.addEventListener('click', () => {
-                        vscode.postMessage({
-                            type: 'showSettings'
-                        });
+                        vscode.postMessage({ type: 'showSettings' });
                     });
-                    
-                    // Functions
-                    function submitQuery() {
+
+                    function handleSubmitQuery() {
                         const query = promptInput.value.trim();
-                        if (!query || isProcessing) {
-                            return;
-                        }
-                        
+                        if (!query || isProcessing) return;
+
                         isProcessing = true;
                         submitButton.disabled = true;
-                        
-                        // Add user message to UI with animation
                         addMessageToUI('user', query);
-                        
-                        // Send to extension
-                        vscode.postMessage({
-                            type: 'submitQuery',
-                            value: query
-                        });
-                        
-                        // Clear input and reset height
+                        vscode.postMessage({ type: 'submitQuery', value: query });
                         promptInput.value = '';
                         promptInput.style.height = 'auto';
-                        
-                        // Show typing indicator
                         typingIndicator.classList.remove('hidden');
                         
-                        // Add loading indicator with animation
-                    }
-                });
-                
-                // Auto resize textarea as user types
-                promptInput.addEventListener('input', () => {
-                    promptInput.style.height = 'auto';
-                    promptInput.style.height = (promptInput.scrollHeight) + 'px';
-                });
-                
-                clearButton.addEventListener('click', () => {
-                    vscode.postMessage({
-                        type: 'clearConversation'
-                    });
-                });
-                
-                apiKeyButton.addEventListener('click', () => {
-                    vscode.postMessage({
-                        type: 'configureApiKey'
-                    });
-                });
-                
-                settingsButton.addEventListener('click', () => {
-                    vscode.postMessage({
-                        type: 'showSettings'
-                    });
-                });
-                
-                // Functions
-                function submitQuery(): void {
-                    const query = promptInput.value.trim();
-                    if (!query || isProcessing) {
-                        return;
-                    }
-                    
-                    isProcessing = true;
-                    submitButton.disabled = true;
-                    
-                    // Add user message to UI with animation
-                    addMessageToUI('user', query);
-                    
-                    // Send to extension
-                    vscode.postMessage({
-                        type: 'submitQuery',
-                        value: query
-                    });
-                    
-                    // Clear input and reset height
-                    promptInput.value = '';
-                    promptInput.style.height = 'auto';
-                    
-                    // Show typing indicator
-                    typingIndicator.classList.remove('hidden');
-                    
-                    // Add loading indicator with animation
-                    const loadingElem = document.createElement('div');
-                    loadingElem.className = 'message assistant loading';
-                    loadingElem.id = 'loading-message';
-                    loadingElem.innerHTML = '<div class="loading-indicator"><div></div><div></div><div></div></div>';
-                    conversation.appendChild(loadingElem);
-                    conversation.scrollTop = conversation.scrollHeight;
-                }
-            });
-        });
-
-        messageElem.querySelectorAll('.insert-code-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const codeToInsert = (e.currentTarget as HTMLElement).dataset.code;
-                if (codeToInsert) {
-                    vscode.postMessage({ type: 'insertToEditor', value: codeToInsert });
-                }
-                
-                            typingIndicator.classList.add('hidden');
-                            
-                            // Add assistant message
-                            addMessageToUI('assistant', message.value);
-                            
-                            // Reset processing state
-                            isProcessing = false;
-                            submitButton.disabled = false;
-                            promptInput.focus();
-                            break;
-                            
-                        case 'clearConversation':
-                            conversation.innerHTML = '';
-                            conversationHistory = [];
-                            break;
-                            
-                        case 'modelInfo':
-                            modelName.textContent = message.value || 'Not set';
-                            break;
-                            
-                        case 'loadedConversation':
-                            if (message.conversation && message.conversation.length) {
-                                // Clear existing conversation display
-                                conversation.innerHTML = '';
-                                
-                            submitButton.disabled = false;
-                            
-                            // Add error message
-                            const errorElem = document.createElement('div');
-                            errorElem.className = 'message error';
-                            errorElem.innerHTML = `<div class="error-icon">⚠️</div><div class="error-message">${escapeHtml(String(message.error || 'An unknown error occurred'))}</div>`;
-                            conversation.appendChild(errorElem);
+                        const existingLoadingMsg = document.getElementById('loading-message');
+                        if (!existingLoadingMsg) {
+                            const loadingElem = document.createElement('div');
+                            loadingElem.className = 'message assistant loading slide-in';
+                            loadingElem.id = 'loading-message';
+                            loadingElem.innerHTML = 
+                                `<div class="avatar assistant-avatar">🧠</div>` +
+                                `<div class="content"><div class="loading-indicator"><div></div><div></div><div></div></div></div>`;
+                            conversation.appendChild(loadingElem);
                             conversation.scrollTop = conversation.scrollHeight;
-                            break;
+                        }
                     }
-                });
-            </script>
-        </body>
-        </html>`;
+
+                    function addMessageToUI(role: 'user' | 'assistant', content: string): void {
+                        const messageElem = document.createElement('div');
+                        messageElem.className = `message ${role} slide-in`;
+                        
+                        const avatarHtml = role === 'user' ? 
+                            '<div class="avatar user-avatar">👤</div>' : 
+                            '<div class="avatar assistant-avatar">🧠</div>';
+
+                        conversationHistory.push({ role, content });
+
+                        let formattedContent = '';
+                        const codeBlockRegex = new RegExp("```(.*?)\\n([\\s\\S]*?)```", "g");
+                        let lastIndex = 0;
+
+                        for (const match of content.matchAll(codeBlockRegex)) {
+                            const language = match[1]?.trim().toLowerCase() || 'plaintext';
+                            const codeSnippet = match[2].trim();
+                            const startIndex = match.index || 0;
+
+                            formattedContent += escapeHtml(content.substring(lastIndex, startIndex));
+                            const codeBlockId = `code-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+                            
+                            formattedContent += 
+                                `<div class="code-block-container">` +
+                                    `<div class="code-block-header">` +
+                                        `<span>${escapeHtml(language)}</span>` +
+                                        `<div>` +
+                                            `<button class="code-action-button copy-code-btn" data-target="#${codeBlockId}" title="Copy code"><i class="icon">📋</i> Copy</button>` +
+                                            `<button class="code-action-button insert-code-btn" data-code="${escapeHtmlAttribute(codeSnippet)}" title="Insert code into editor"><i class="icon">📝</i> Insert</button>` +
+                                        `</div>` +
+                                    `</div>` +
+                                    `<pre id="${codeBlockId}"><code>${escapeHtml(codeSnippet)}</code></pre>` +
+                                `</div>`;
+                            lastIndex = startIndex + match[0].length;
+                        }
+                        formattedContent += escapeHtml(content.substring(lastIndex));
+                        
+                        if (lastIndex === 0) {
+                            formattedContent = formattedContent.replace(/\n/g, '<br>');
+                        }
+
+                        messageElem.innerHTML = `${avatarHtml}<div class="content">${formattedContent}</div>`;
+                        conversation.appendChild(messageElem);
+                        conversation.scrollTop = conversation.scrollHeight;
+
+                        messageElem.querySelectorAll('.copy-code-btn').forEach(button => {
+                            button.addEventListener('click', (e) => {
+                                const targetSelector = (e.currentTarget as HTMLElement).dataset.target;
+                                if (targetSelector) {
+                                    const codeElement = messageElem.querySelector(targetSelector + ' code') as HTMLElement;
+                                    if (codeElement && codeElement.textContent) {
+                                        vscode.postMessage({ type: 'copyToClipboard', value: codeElement.textContent });
+                                        const originalText = button.innerHTML;
+                                        button.innerHTML = '<i class="icon">✅</i> Copied!';
+                                        setTimeout(() => { button.innerHTML = originalText; }, 2000);
+                                    }
+                                }
+                            });
+                        });
+                        messageElem.querySelectorAll('.insert-code-btn').forEach(button => {
+                            button.addEventListener('click', (e) => {
+                                const codeToInsert = (e.currentTarget as HTMLElement).dataset.code;
+                                if (codeToInsert) {
+                                    vscode.postMessage({ type: 'insertToEditor', value: codeToInsert });
+                                }
+                            });
+                        });
+                    }
+
+                    window.addEventListener('message', (event: MessageEvent<VsCodeMessage>) => {
+                        const message = event.data;
+                        const loadingMessageElement = document.getElementById('loading-message');
+                        if (loadingMessageElement && message.type === 'updateResponse') {
+                            loadingMessageElement.remove();
+                        }
+
+                        switch (message.type) {
+                            case 'updateResponse':
+                                typingIndicator.classList.add('hidden');
+                                if (message.isError) {
+                                    addMessageToUI('assistant', `⚠️ Error: ${escapeHtml(String(message.value))}`);
+                                } else {
+                                    addMessageToUI('assistant', message.value);
+                                }
+                                isProcessing = false;
+                                submitButton.disabled = false;
+                                promptInput.focus();
+                                break;
+                            case 'clearConversation':
+                                conversation.innerHTML = '';
+                                conversationHistory = [];
+                                break;
+                            case 'modelInfo':
+                                modelNameElement.textContent = message.value || 'N/A';
+                                break;
+                            case 'loadedConversation':
+                                conversation.innerHTML = '';
+                                conversationHistory = [];
+                                if (message.value && Array.isArray(message.value)) {
+                                    message.value.forEach(msg => addMessageToUI(msg.role, msg.content));
+                                }
+                                break;
+                        }
+                    });
+                </script>
+            </body>
+        </html>
+    `;
+}
 }
 }
