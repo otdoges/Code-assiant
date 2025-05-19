@@ -1,5 +1,6 @@
 {
   "name": "code-explorer",
+  "publisher": "otdoges",
   "displayName": "Code Explorer",
   "description": "AI coding assistant powered by GitHub marketplace models",
   "version": "0.2.1",
