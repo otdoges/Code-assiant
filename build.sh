@@ -69,7 +69,6 @@ print_message "Installing extension..."
 code --install-extension code-explorer-0.2.1.vsix
 
 print_message "Extension rebuilt and installed successfully!"
-}
 
 # Show help if requested
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
