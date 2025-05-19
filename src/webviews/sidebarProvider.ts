@@ -185,7 +185,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 <script nonce="${nonce}">
                     // Initialize the VS Code API for communication
                     const vscode = acquireVsCodeApi();
-                    window.flowforgeAiApiKeyExists = ${apiKeyExists};
+                    window.flowforgeAiApiKeyExists = ${apiKeyExists ? 'true' : 'false'};
                 </script>
                 
                 <!-- Load the React application bundle -->

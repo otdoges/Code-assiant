@@ -37,7 +37,9 @@ declare global {
 const App: React.FC = () => {
     // Read the initial API key status from the global variable set by the extension
     const initialApiKeyExists = typeof window.flowforgeAiApiKeyExists === 'boolean' ? window.flowforgeAiApiKeyExists : false;
+    // Store this in both state and ref to prevent re-renders from losing it
     const [apiKeyIsSet, setApiKeyIsSet] = useState<boolean>(initialApiKeyExists);
+    const apiKeyStatusRef = React.useRef(initialApiKeyExists);
     const [apiKeyInputValue, setApiKeyInputValue] = useState<string>('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -160,15 +162,21 @@ const App: React.FC = () => {
             alert('Please enter an API key.'); // Simple alert, can be improved
             return;
         }
-        await configureApiKeyApi(apiKeyInputValue.trim()); // Send to extension
-        setApiKeyIsSet(true); // Update UI to show chat
+        try {
+            await configureApiKeyApi(apiKeyInputValue.trim()); // Send to extension
+            setApiKeyIsSet(true); // Update UI to show chat
+            apiKeyStatusRef.current = true; // Update ref as well
+        } catch (error) {
+            console.error('Failed to set API key:', error);
+            alert('Failed to save API key. Please try again.');
+        }
         // The extension side will show a confirmation message via vscode.window.showInformationMessage
     }, [apiKeyInputValue]);
 
-    // If API key is not set, show the configuration form
-    if (!apiKeyIsSet) {
+    // Force API key form to stay visible until explicitly dismissed
+    if (!apiKeyIsSet || !apiKeyStatusRef.current) {
         return (
-            <div className="container api-key-setup">
+            <div className="container api-key-setup" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999, background: 'var(--vscode-editor-background)', padding: '20px' }}>
                 <h3>Set up FlowForge AI</h3>
                 <p>Please enter your GitHub Personal Access Token (PAT) to get started.</p>
                 <div className="api-key-input-group">
