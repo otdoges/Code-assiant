@@ -13,14 +13,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register sidebar webview
     const sidebarView = vscode.window.registerWebviewViewProvider(
-        'code-explorer.sidebar',
+        'flowforge-ai.sidebar',
         sidebarProvider
     );
     context.subscriptions.push(sidebarView);
 
     // Register commands
     context.subscriptions.push(
-        vscode.commands.registerCommand('code-explorer.showSidebar', async () => {
+        vscode.commands.registerCommand('flowforge-ai.showSidebar', async () => {
             const editor = vscode.window.activeTextEditor;
             if (!editor) {
                 vscode.window.showInformationMessage('Open a file to use AI Assistant');
@@ -53,7 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
                     const response = await aiService.sendMessage(tempPrompt); 
                     
                     // Show response in side panel
-                    vscode.commands.executeCommand('github-ai-assistant-sidebar.focus');
+                    vscode.commands.executeCommand('flowforge-ai.sidebar.focus');
                     if (sidebarProvider.updateResponse) { 
                         sidebarProvider.updateResponse(response);
                     }
@@ -65,12 +65,12 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }),
 
-        vscode.commands.registerCommand('code-explorer.showSettings', async () => {
+        vscode.commands.registerCommand('flowforge-ai.showSettings', async () => {
             // Open the VS Code settings UI with our extension's settings
-            await vscode.commands.executeCommand('workbench.action.openSettings', 'code-explorer');
+            await vscode.commands.executeCommand('workbench.action.openSettings', 'flowforge-ai');
         }),
 
-        vscode.commands.registerCommand('code-explorer.configureAPIKey', async () => {
+        vscode.commands.registerCommand('flowforge-ai.configureAPIKey', async () => {
             const apiKey = await vscode.window.showInputBox({
                 ignoreFocusOut: true,
                 password: true,
@@ -84,12 +84,12 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }),
 
-        vscode.commands.registerCommand('github-ai-assistant.clearConversation', () => {
+        vscode.commands.registerCommand('flowforge-ai.clearConversation', () => {
             sidebarProvider.clearConversation();
             vscode.window.showInformationMessage('Conversation cleared');
         }),
 
-        vscode.commands.registerCommand('github-ai-assistant.enhancePrompt', async () => {
+        vscode.commands.registerCommand('flowforge-ai.enhancePrompt', async () => {
             const activeEditor = vscode.window.activeTextEditor;
             let prompt = '';
             if (activeEditor && activeEditor.selection && !activeEditor.selection.isEmpty) {
@@ -123,12 +123,9 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }),
 
-        vscode.commands.registerCommand('github-ai-assistant.showSettings', () => {
-            vscode.commands.executeCommand('workbench.action.openSettings', '@ext:github-ai-assistant.github-ai-assistant');
-        })
     );
 
-    console.log('GitHub AI Assistant is now active!');
+    console.log('FlowForge AI is now active!');
 }
 
 export function deactivate() {

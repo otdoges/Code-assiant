@@ -15,7 +15,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         private readonly _configService: ConfigurationService
     ) {}
     
-    public resolveWebviewView(
+    public async resolveWebviewView(
         webviewView: vscode.WebviewView,
         _webviewContext: vscode.WebviewViewResolveContext,
         _token: vscode.CancellationToken
@@ -33,7 +33,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             ]
         };
         
-        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+        const apiKey = await this._configService.getApiKey();
+        const apiKeyExists = !!apiKey;
+        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview, apiKeyExists);
         
         // Listen for messages from the webview
         webviewView.webview.onDidReceiveMessage(async (data) => {
@@ -55,7 +57,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         vscode.window.showInformationMessage('API key updated successfully');
                     } else {
                         // Otherwise show the command palette to configure it
-                        vscode.commands.executeCommand('code-explorer.configureAPIKey');
+                        vscode.commands.executeCommand('flowforge-ai.configureAPIKey');
                     }
                     break;
                 
@@ -116,7 +118,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     break;
                     
                 case 'showSettings':
-                    vscode.commands.executeCommand('code-explorer.showSettings');
+                    vscode.commands.executeCommand('flowforge-ai.showSettings');
                     break;
             }
         });
@@ -138,7 +140,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         }
     }
     
-    private _getHtmlForWebview(webview: vscode.Webview) {
+    private _getHtmlForWebview(webview: vscode.Webview, apiKeyExists: boolean) {
         // Get path to our React app resources
         const distUri = webview.asWebviewUri(
             vscode.Uri.joinPath(this._context.extensionUri, 'dist')
@@ -182,6 +184,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 <script nonce="${nonce}">
                     // Initialize the VS Code API for communication
                     const vscode = acquireVsCodeApi();
+                    window.flowforgeAiApiKeyExists = ${apiKeyExists};
                 </script>
                 
                 <!-- Load the React application bundle -->

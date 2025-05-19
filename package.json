@@ -1,13 +1,13 @@
 {
-  "name": "code-explorer",
+  "name": "flowforge-ai",
   "publisher": "otdoges",
-  "displayName": "Code Explorer",
+  "displayName": "FlowForge AI",
   "description": "AI coding assistant powered by GitHub marketplace models",
-  "version": "0.2.1",
-  "author": "otdoges",
+  "version": "0.2.3",
+  "author": "flowforge",
   "repository": {
     "type": "git",
-    "url": "https://github.com/otdoges/code-explorer.git"
+    "url": "https://github.com/flowforge/flowforge.git"
   },
   "engines": {
     "vscode": "^1.80.0"
@@ -15,27 +15,29 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onView:flowforge-ai.sidebar"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "code-explorer.showSidebar",
-        "title": "Show Code Explorer",
+        "command": "flowforge-ai.showSidebar",
+        "title": "Show FlowForge AI",
         "icon": "$(comment-discussion)"
       },
       {
-        "command": "code-explorer.clearConversation",
+        "command": "flowforge-ai.clearConversation",
         "title": "Clear Conversation",
         "icon": "$(trash)"
       },
       {
-        "command": "code-explorer.enhancePrompt",
+        "command": "flowforge-ai.enhancePrompt",
         "title": "Enhance Prompt",
         "icon": "$(sparkle)"
       },
       {
-        "command": "code-explorer.showSettings",
+        "command": "flowforge-ai.showSettings",
         "title": "Show Settings",
         "icon": "$(gear)"
       }
@@ -43,31 +45,31 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "code-explorer",
-          "title": "Code Explorer",
+          "id": "flowforge-ai",
+          "title": "FlowForge AI",
           "icon": "media/icon.svg"
         }
       ]
     },
     "views": {
-      "code-explorer": [
+      "flowforge-ai": [
         {
           "type": "webview",
-          "id": "code-explorer.sidebar",
-          "name": "Code Explorer",
+          "id": "flowforge-ai.sidebar",
+          "name": "FlowForge AI",
           "icon": "media/icon.svg"
         }
       ]
     },
     "configuration": {
-      "title": "Code Explorer",
+      "title": "FlowForge AI",
       "properties": {
-        "code-explorer.githubToken": {
+        "flowforge-ai.githubToken": {
           "type": "string",
           "default": "",
           "description": "Your GitHub Personal Access Token (PAT) with 'models:read' permission. This token will be sent to a Microsoft service for model inference."
         },
-        "code-explorer.selectedModel": {
+        "flowforge-ai.selectedModel": {
           "type": "string",
           "default": "openai/o4-mini",
           "enum": [
@@ -84,14 +86,14 @@
           ],
           "description": "Select the AI model to use for chat completions."
         },
-        "code-explorer.temperature": {
+        "flowforge-ai.temperature": {
           "type": "number",
           "default": 0.7,
           "minimum": 0,
           "maximum": 1,
           "description": "Controls the randomness of the output. Lower values (e.g., 0.2) make the output more focused and deterministic, higher values (e.g., 0.8) make it more creative."
         },
-        "code-explorer.saveHistory": {
+        "flowforge-ai.saveHistory": {
           "type": "boolean",
           "default": true,
           "description": "Enable or disable saving of conversation history locally."

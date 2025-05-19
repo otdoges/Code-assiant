@@ -66,7 +66,7 @@ run_cmd package
 
 # Install the extension
 print_message "Installing extension..."
-code --install-extension code-explorer-0.2.1.vsix
+code --install-extension flowforge-ai-0.2.2.vsix
 
 print_message "Extension rebuilt and installed successfully!"
 

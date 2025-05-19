@@ -1,4 +1,4 @@
-# Code Explorer - AI-Powered Coding Assistant for VS Code
+# FlowForge AI - AI Coding Assistant for VS Code
 
 A modern, feature-rich AI coding assistant for VS Code that helps you code more efficiently with intelligent suggestions, explanations, and real-time assistance. The extension features a sleek, user-friendly chat interface and powerful customization options.
 
@@ -32,7 +32,7 @@ A modern, feature-rich AI coding assistant for VS Code that helps you code more 
 
 ### From VSIX
 
-1. Download the latest `.vsix` file from the [Releases](https://github.com/otdoges/code-explorer/releases) page
+1. Download the latest `.vsix` file from the [Releases](https://github.com/flowforge/flowforge/releases) page
 2. In VS Code, go to Extensions view (Ctrl+Shift+X)
 3. Click on the `...` menu and select "Install from VSIX..."
 4. Select the downloaded `.vsix` file

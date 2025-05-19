@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 export class ConfigurationService {
     private context: vscode.ExtensionContext;
-    private readonly API_KEY_SECRET = 'github-ai-assistant.apiKey';
+    private readonly API_KEY_SECRET = 'flowforge-ai.apiKey';
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
@@ -17,17 +17,17 @@ export class ConfigurationService {
     }
 
     public getDefaultModel(): string {
-        const config = vscode.workspace.getConfiguration('github-ai-assistant');
+        const config = vscode.workspace.getConfiguration('flowforge-ai');
         return config.get<string>('defaultModel', 'copilot');
     }
 
     public setDefaultModel(model: string): void {
-        const config = vscode.workspace.getConfiguration('github-ai-assistant');
+        const config = vscode.workspace.getConfiguration('flowforge-ai');
         config.update('defaultModel', model, vscode.ConfigurationTarget.Global);
     }
 
     public getConfiguration(): vscode.WorkspaceConfiguration {
-        return vscode.workspace.getConfiguration('code-explorer');
+        return vscode.workspace.getConfiguration('flowforge-ai');
     }
 
     public getSelectedModel(): string {

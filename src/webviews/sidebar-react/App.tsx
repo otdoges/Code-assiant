@@ -18,7 +18,27 @@ import {
 
 import './styles.css';
 
+// Extend window type to include our custom property
+declare global {
+    interface Window {
+        flowforgeAiApiKeyExists?: boolean;
+        vscode?: any; // For acquireVsCodeApi
+    }
+}
+
+// Extend window type to include our custom property
+declare global {
+    interface Window {
+        flowforgeAiApiKeyExists?: boolean;
+        vscode?: any; // For acquireVsCodeApi
+    }
+}
+
 const App: React.FC = () => {
+    // Read the initial API key status from the global variable set by the extension
+    const initialApiKeyExists = typeof window.flowforgeAiApiKeyExists === 'boolean' ? window.flowforgeAiApiKeyExists : false;
+    const [apiKeyIsSet, setApiKeyIsSet] = useState<boolean>(initialApiKeyExists);
+    const [apiKeyInputValue, setApiKeyInputValue] = useState<string>('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const [modelName, setModelName] = useState('N/A');
@@ -134,6 +154,39 @@ const App: React.FC = () => {
         setModelName(selectedModel);
     }, []);
 
+    const handleApiKeySubmit = useCallback(async () => {
+        if (apiKeyInputValue.trim() === '') {
+            // Optionally, show an error message in the webview
+            alert('Please enter an API key.'); // Simple alert, can be improved
+            return;
+        }
+        await configureApiKeyApi(apiKeyInputValue.trim()); // Send to extension
+        setApiKeyIsSet(true); // Update UI to show chat
+        // The extension side will show a confirmation message via vscode.window.showInformationMessage
+    }, [apiKeyInputValue]);
+
+    // If API key is not set, show the configuration form
+    if (!apiKeyIsSet) {
+        return (
+            <div className="container api-key-setup">
+                <h3>Set up FlowForge AI</h3>
+                <p>Please enter your GitHub Personal Access Token (PAT) to get started.</p>
+                <div className="api-key-input-group">
+                    <input
+                        type="password"
+                        className="api-key-input"
+                        value={apiKeyInputValue}
+                        onChange={(e) => setApiKeyInputValue(e.target.value)}
+                        placeholder="Enter your GitHub PAT"
+                    />
+                    <button className="api-key-submit-button" onClick={handleApiKeySubmit}>Save and Continue</button>
+                </div>
+                <p className="api-key-note"><small>Your PAT will be stored securely using VS Code's SecretStorage. Ensure it has 'models:read' permission. You can change this later in settings.</small></p>
+            </div>
+        );
+    }
+
+    // API key is set, show the main chat application
     return (
         <div className="container">
             <HeaderToolbar
