@@ -3,7 +3,7 @@
   "publisher": "otdoges",
   "displayName": "FlowForge AI",
   "description": "AI coding assistant powered by GitHub marketplace models",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "author": "flowforge",
   "repository": {
     "type": "git",
