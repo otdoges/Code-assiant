@@ -64,9 +64,12 @@ run_cmd compile
 print_message "Packaging extension..."
 run_cmd package
 
+# Get version from package.json
+VERSION=$(grep '"version"' package.json | head -1 | awk -F: '{ print $2 }' | sed 's/[", ]//g')
+
 # Install the extension
 print_message "Installing extension..."
-code --install-extension flowforge-ai-0.2.2.vsix
+code --install-extension flowforge-ai-$VERSION.vsix
 
 print_message "Extension rebuilt and installed successfully!"
 
