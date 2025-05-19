@@ -194,15 +194,15 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'nonce-${nonce}'; img-src ${webview.cspSource} https:; font-src ${webview.cspSource}">
                 <link href="${styleResetUri}" rel="stylesheet">
                 <link href="${styleVSCodeUri}" rel="stylesheet">
-                <link href="${reactStylesUri}" rel="stylesheet">
                 <title>AI Chat</title>
             </head>
             <body>
                 <div id="root"></div>
-                
                 <script nonce="${nonce}">
-                    // Initialize the VS Code API for communication
+                    // Acquire VS Code API at the top level before any other scripts
+                    // This ensures it's only called once
                     const vscode = acquireVsCodeApi();
+                    window.vscodeApi = vscode;
                     window.flowforgeAiApiKeyExists = ${apiKeyExists ? 'true' : 'false'};
                 </script>
                 

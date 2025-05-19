@@ -16,7 +16,7 @@ import {
     loadConversation
 } from './vscode-api';
 
-import './styles.css';
+// import './styles.css';
 
 // Extend window type to include our custom property
 declare global {

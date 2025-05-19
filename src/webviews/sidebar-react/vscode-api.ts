@@ -10,15 +10,21 @@ declare global {
     }
 }
 
-// Create a singleton that exposes the VS Code API
-// This ensures we only call acquireVsCodeApi() once
-let vscodeApi: VSCodeApi | undefined = undefined;
+// The VS Code API is now acquired in the HTML before this script loads
+declare global {
+    interface Window {
+        vscodeApi: VSCodeApi; // Pre-acquired VS Code API instance
+    }
+}
 
 export function getVSCodeApi(): VSCodeApi {
-    if (!vscodeApi) {
-        vscodeApi = window.acquireVsCodeApi();
+    // Simply return the global instance that was set in the HTML
+    // No need to call acquireVsCodeApi() here anymore
+    if (!window.vscodeApi) {
+        console.error('Fatal Error: VS Code API not found on window object');
+        throw new Error('VS Code API not found on window object');
     }
-    return vscodeApi;
+    return window.vscodeApi;
 }
 
 // Helper functions for common VS Code API operations
