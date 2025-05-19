@@ -46,6 +46,11 @@ export class AIService {
         });
     }
 
+    public async reinitializeClient() {
+        await this.loadConfiguration(); // ensure config is fresh
+        this.initializeClient();
+    }
+
     private async loadConfiguration() {
         this.githubToken = await this.configurationService.getApiKey();
         this.selectedModel = this.configurationService.getSelectedModel();
@@ -76,7 +81,7 @@ export class AIService {
             });
         } else {
             this.openai = undefined;
-            vscode.window.showWarningMessage('GitHub AI Assistant: GitHub Token not set. Please configure it in settings or .env file.');
+            // The warning will be handled by the webview UI
         }
     }
 

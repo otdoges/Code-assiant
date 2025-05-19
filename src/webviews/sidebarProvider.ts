@@ -53,8 +53,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 case 'configureApiKey':
                     if (data.value) {
                         // If API key is provided directly, use it
-                        this._configService.setApiKey(data.value);
+                        await this._configService.setApiKey(data.value);
                         vscode.window.showInformationMessage('API key updated successfully');
+                        await this._aiService.reinitializeClient(); // Re-initialize AI service with new key
                     } else {
                         // Otherwise show the command palette to configure it
                         vscode.commands.executeCommand('flowforge-ai.configureAPIKey');
