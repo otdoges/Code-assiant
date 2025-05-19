@@ -28,7 +28,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             localResourceRoots: [
                 vscode.Uri.joinPath(this._context.extensionUri, 'media'),
                 vscode.Uri.joinPath(this._context.extensionUri, 'src', 'webviews', 'sidebar-react'),
-                vscode.Uri.joinPath(this._context.extensionUri, 'dist')
+                vscode.Uri.joinPath(this._context.extensionUri, 'dist'),
+                vscode.Uri.joinPath(this._context.extensionUri, 'out')
             ]
         };
         

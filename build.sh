@@ -51,6 +51,26 @@ run_cmd() {
   fi
 }
 
+# Clean up build directories
+print_message "Cleaning build directories..."
+rm -rf dist out
+mkdir -p dist out
+
+# Build the extension
+print_message "Building extension..."
+run_cmd compile
+
+# Package the extension
+print_message "Packaging extension..."
+run_cmd package
+
+# Install the extension
+print_message "Installing extension..."
+code --install-extension code-explorer-0.2.1.vsix
+
+print_message "Extension rebuilt and installed successfully!"
+}
+
 # Show help if requested
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   echo "Usage: ./build.sh [OPTIONS]"

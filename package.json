@@ -15,7 +15,7 @@
     "Other"
   ],
   "activationEvents": [],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
@@ -104,9 +104,10 @@
     "compile-prod": "npm run compile-react-prod && webpack --mode production --devtool hidden-source-map",
     "compile-react": "webpack --config webpack.react.config.js",
     "compile-react-prod": "webpack --config webpack.react.config.js --mode production",
+    "package": "vsce package",
     "watch": "webpack --watch",
-    "watch-react": "webpack --config webpack.react.config.js --watch",
-    "package": "npm run compile-prod && vsce package",
+    "clean": "rm -rf dist out && mkdir -p dist out",
+    "rebuild": "npm run clean && npm run compile && npm run package",
     "lint": "eslint src --ext ts,tsx"
   },
   "devDependencies": {
