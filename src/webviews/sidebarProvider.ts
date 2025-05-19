@@ -52,10 +52,28 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     
                 case 'configureApiKey':
                     if (data.value) {
-                        // If API key is provided directly, use it
-                        await this._configService.setApiKey(data.value);
-                        vscode.window.showInformationMessage('API key updated successfully');
-                        await this._aiService.reinitializeClient(); // Re-initialize AI service with new key
+                        try {
+                            // If API key is provided directly, use it
+                            console.log('[FlowForge] SidebarProvider: Setting API key from webview...');
+                            await this._configService.setApiKey(data.value);
+                            vscode.window.showInformationMessage('API key updated successfully');
+                            console.log('[FlowForge] SidebarProvider: Reinitializing AI client...');
+                            await this._aiService.reinitializeClient(); // Re-initialize AI service with new key
+                            
+                            // Send confirmation to webview
+                            if (this._view) {
+                                console.log('[FlowForge] SidebarProvider: Notifying webview of successful API key update');
+                                this._view.webview.postMessage({ type: 'apiKeyUpdateSuccess', value: true });
+                            }
+                        } catch (error) {
+                            console.error('[FlowForge] SidebarProvider: Error setting API key:', error);
+                            vscode.window.showErrorMessage('Failed to set API key. Please try again.');
+                            
+                            // Send error to webview
+                            if (this._view) {
+                                this._view.webview.postMessage({ type: 'apiKeyUpdateSuccess', value: false });
+                            }
+                        }
                     } else {
                         // Otherwise show the command palette to configure it
                         vscode.commands.executeCommand('flowforge-ai.configureAPIKey');

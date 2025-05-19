@@ -163,9 +163,15 @@ const App: React.FC = () => {
             return;
         }
         try {
-            await configureApiKeyApi(apiKeyInputValue.trim()); // Send to extension
-            setApiKeyIsSet(true); // Update UI to show chat
-            apiKeyStatusRef.current = true; // Update ref as well
+            const success = await configureApiKeyApi(apiKeyInputValue.trim()); // Send to extension
+            if (success) {
+                console.log('[FlowForge] API key set successfully, updating UI...');
+                // Use timeout to ensure state updates after message is processed
+                setTimeout(() => {
+                    setApiKeyIsSet(true); // Update UI to show chat
+                    apiKeyStatusRef.current = true; // Update ref as well
+                }, 1000);
+            }
         } catch (error) {
             console.error('Failed to set API key:', error);
             alert('Failed to save API key. Please try again.');

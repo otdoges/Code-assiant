@@ -28435,12 +28435,45 @@ module.exports = styleTagTransform;
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const jsx_runtime_1 = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-const react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+const react_1 = __importStar(__webpack_require__(/*! react */ "./node_modules/react/index.js"));
 const Conversation_1 = __importDefault(__webpack_require__(/*! ./components/Conversation */ "./src/webviews/sidebar-react/components/Conversation.tsx"));
 const InputArea_1 = __importDefault(__webpack_require__(/*! ./components/InputArea */ "./src/webviews/sidebar-react/components/InputArea.tsx"));
 const HeaderToolbar_1 = __importDefault(__webpack_require__(/*! ./components/HeaderToolbar */ "./src/webviews/sidebar-react/components/HeaderToolbar.tsx"));
@@ -28450,7 +28483,9 @@ __webpack_require__(/*! ./styles.css */ "./src/webviews/sidebar-react/styles.css
 const App = () => {
     // Read the initial API key status from the global variable set by the extension
     const initialApiKeyExists = typeof window.flowforgeAiApiKeyExists === 'boolean' ? window.flowforgeAiApiKeyExists : false;
+    // Store this in both state and ref to prevent re-renders from losing it
     const [apiKeyIsSet, setApiKeyIsSet] = (0, react_1.useState)(initialApiKeyExists);
+    const apiKeyStatusRef = react_1.default.useRef(initialApiKeyExists);
     const [apiKeyInputValue, setApiKeyInputValue] = (0, react_1.useState)('');
     const [messages, setMessages] = (0, react_1.useState)([]);
     const [isProcessing, setIsProcessing] = (0, react_1.useState)(false);
@@ -28554,13 +28589,26 @@ const App = () => {
             alert('Please enter an API key.'); // Simple alert, can be improved
             return;
         }
-        await (0, vscode_api_1.configureApiKey)(apiKeyInputValue.trim()); // Send to extension
-        setApiKeyIsSet(true); // Update UI to show chat
+        try {
+            const success = await (0, vscode_api_1.configureApiKey)(apiKeyInputValue.trim()); // Send to extension
+            if (success) {
+                console.log('[FlowForge] API key set successfully, updating UI...');
+                // Use timeout to ensure state updates after message is processed
+                setTimeout(() => {
+                    setApiKeyIsSet(true); // Update UI to show chat
+                    apiKeyStatusRef.current = true; // Update ref as well
+                }, 1000);
+            }
+        }
+        catch (error) {
+            console.error('Failed to set API key:', error);
+            alert('Failed to save API key. Please try again.');
+        }
         // The extension side will show a confirmation message via vscode.window.showInformationMessage
     }, [apiKeyInputValue]);
-    // If API key is not set, show the configuration form
-    if (!apiKeyIsSet) {
-        return ((0, jsx_runtime_1.jsxs)("div", { className: "container api-key-setup", children: [(0, jsx_runtime_1.jsx)("h3", { children: "Set up FlowForge AI" }), (0, jsx_runtime_1.jsx)("p", { children: "Please enter your GitHub Personal Access Token (PAT) to get started." }), (0, jsx_runtime_1.jsxs)("div", { className: "api-key-input-group", children: [(0, jsx_runtime_1.jsx)("input", { type: "password", className: "api-key-input", value: apiKeyInputValue, onChange: (e) => setApiKeyInputValue(e.target.value), placeholder: "Enter your GitHub PAT" }), (0, jsx_runtime_1.jsx)("button", { className: "api-key-submit-button", onClick: handleApiKeySubmit, children: "Save and Continue" })] }), (0, jsx_runtime_1.jsx)("p", { className: "api-key-note", children: (0, jsx_runtime_1.jsx)("small", { children: "Your PAT will be stored securely using VS Code's SecretStorage. Ensure it has 'models:read' permission. You can change this later in settings." }) })] }));
+    // Force API key form to stay visible until explicitly dismissed
+    if (!apiKeyIsSet || !apiKeyStatusRef.current) {
+        return ((0, jsx_runtime_1.jsxs)("div", { className: "container api-key-setup", style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999, background: 'var(--vscode-editor-background)', padding: '20px' }, children: [(0, jsx_runtime_1.jsx)("h3", { children: "Set up FlowForge AI" }), (0, jsx_runtime_1.jsx)("p", { children: "Please enter your GitHub Personal Access Token (PAT) to get started." }), (0, jsx_runtime_1.jsxs)("div", { className: "api-key-input-group", children: [(0, jsx_runtime_1.jsx)("input", { type: "password", className: "api-key-input", value: apiKeyInputValue, onChange: (e) => setApiKeyInputValue(e.target.value), placeholder: "Enter your GitHub PAT" }), (0, jsx_runtime_1.jsx)("button", { className: "api-key-submit-button", onClick: handleApiKeySubmit, children: "Save and Continue" })] }), (0, jsx_runtime_1.jsx)("p", { className: "api-key-note", children: (0, jsx_runtime_1.jsx)("small", { children: "Your PAT will be stored securely using VS Code's SecretStorage. Ensure it has 'models:read' permission. You can change this later in settings." }) })] }));
     }
     // API key is set, show the main chat application
     return ((0, jsx_runtime_1.jsxs)("div", { className: "container", children: [(0, jsx_runtime_1.jsx)(HeaderToolbar_1.default, { modelName: modelName, onClear: handleClearConversation, onConfigureApiKey: handleConfigureApiKey, onShowSettings: handleShowSettings }), (0, jsx_runtime_1.jsx)(Conversation_1.default, { messages: messages, isProcessing: isProcessing, onCopy: handleCopyToClipboard, onInsert: handleInsertToEditor }), (0, jsx_runtime_1.jsx)(InputArea_1.default, { onSubmit: handleSubmitQuery, disabled: isProcessing }), (0, jsx_runtime_1.jsx)(SettingsPanel_1.default, { isVisible: showSettings, onClose: handleCloseSettings, modelName: modelName, onSaveSettings: handleSaveSettings })] }));
@@ -28969,7 +29017,21 @@ function clearConversation() {
     postMessageToExtension('clearConversation');
 }
 function configureApiKey(apiKey) {
-    postMessageToExtension('configureApiKey', apiKey);
+    return new Promise((resolve) => {
+        console.log('[FlowForge] Configuring API key...');
+        try {
+            postMessageToExtension('configureApiKey', apiKey);
+            // Add delay to ensure message is processed
+            setTimeout(() => {
+                console.log('[FlowForge] API key configuration message sent');
+                resolve(true);
+            }, 500);
+        }
+        catch (error) {
+            console.error('[FlowForge] Error configuring API key:', error);
+            resolve(false);
+        }
+    });
 }
 function showSettings() {
     postMessageToExtension('showSettings');

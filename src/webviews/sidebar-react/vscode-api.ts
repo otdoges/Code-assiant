@@ -43,8 +43,21 @@ export function clearConversation(): void {
     postMessageToExtension('clearConversation');
 }
 
-export function configureApiKey(apiKey?: string): void {
-    postMessageToExtension('configureApiKey', apiKey);
+export function configureApiKey(apiKey?: string): Promise<boolean> {
+    return new Promise((resolve) => {
+        console.log('[FlowForge] Configuring API key...');
+        try {
+            postMessageToExtension('configureApiKey', apiKey);
+            // Add delay to ensure message is processed
+            setTimeout(() => {
+                console.log('[FlowForge] API key configuration message sent');
+                resolve(true);
+            }, 500);
+        } catch (error) {
+            console.error('[FlowForge] Error configuring API key:', error);
+            resolve(false);
+        }
+    });
 }
 
 export function showSettings(): void {
