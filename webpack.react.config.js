@@ -9,7 +9,7 @@ const config = {
   mode: 'development',
   entry: './src/webviews/sidebar-react/index.tsx',
   output: {
-    path: path.resolve(__dirname, 'src/webviews/sidebar-react'),
+    path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
     libraryTarget: 'commonjs2'
   },
