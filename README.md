@@ -1,53 +1,115 @@
-# GitHub AI Assistant for VS Code
+# Code Explorer - AI-Powered Coding Assistant for VS Code
 
-A powerful AI coding assistant for VS Code that uses GitHub marketplace models to help you code more efficiently. This extension provides intelligent code suggestions, explanations, and assistance powered by state-of-the-art AI models.
+A modern, feature-rich AI coding assistant for VS Code that helps you code more efficiently with intelligent suggestions, explanations, and real-time assistance. The extension features a sleek, user-friendly chat interface and powerful customization options.
 
-## Features
+![Code Explorer Screenshot](https://via.placeholder.com/800x500.png?text=Code+Explorer+Screenshot)
 
-- **AI-powered coding assistance** - Get help with writing, debugging, and understanding code
-- **Custom API key support** - Use your own GitHub Personal Access Token (PAT)
-- **Privacy-focused** - Your data security and privacy is our top priority
-- **Interactive chat interface** - Easily ask questions and get detailed responses
-- **Code insights** - Get explanations for complex code
-- **Smart suggestions** - Receive intelligent recommendations for your codebase
+## ✨ Features
 
-## Requirements
+- **Modern Chat Interface** - Clean, responsive design with message bubbles and intuitive controls
+- **Multiple AI Models** - Choose from various AI models to suit your needs
+- **Code Formatting** - Automatic code formatting with syntax highlighting
+- **Conversation History** - Save and review your chat history
+- **Customizable Settings** - Fine-tune the assistant's behavior to your preferences
+- **Dark/Light Theme Support** - Automatically adapts to your VS Code theme
+- **API Key Management** - Securely store and manage your API keys
 
-- VS Code 1.60.0 or higher
-- GitHub Personal Access Token (PAT) with appropriate permissions
+## 📋 Requirements
 
-## Installation
+- VS Code 1.80.0 or higher
+- Node.js 16.x or later
+- npm or bun package manager
 
-1. Install the extension from the VS Code Marketplace
-2. Configure your GitHub PAT via the extension settings
-3. Start using the AI assistant from the sidebar
+## 🚀 Installation
 
-## Using the Extension
+### From VS Code Marketplace
 
-### Setting up your API Key
+1. Open VS Code
+2. Go to Extensions view (Ctrl+Shift+X)
+3. Search for "Code Explorer"
+4. Click Install
+5. Reload VS Code when prompted
 
-1. Click on the AI Assistant icon in the activity bar
-2. Click "Configure API Key" button
-3. Enter your GitHub PAT when prompted
+### From VSIX
 
-### Getting AI Assistance
+1. Download the latest `.vsix` file from the [Releases](https://github.com/yourusername/code-explorer/releases) page
+2. In VS Code, go to Extensions view (Ctrl+Shift+X)
+3. Click on the `...` menu and select "Install from VSIX..."
+4. Select the downloaded `.vsix` file
+5. Reload VS Code
 
-There are multiple ways to interact with the assistant:
+## 🛠️ Configuration
 
-1. **Sidebar**: Click the extension icon in the activity bar and use the chat interface
-2. **Context Menu**: Right-click in the editor and select "Ask AI Assistant"
-3. **Command Palette**: Press `Ctrl+Shift+P` and type "Ask AI Assistant"
+### Setting Up Your API Key
 
-### Example Usage
+1. Click the Code Explorer icon in the activity bar
+2. Click the settings (⚙️) icon in the top-right corner
+3. Enter your API key in the settings panel
+4. Click "Save" to apply your changes
 
-- Ask coding questions: "How do I implement a binary search tree in JavaScript?"
-- Get explanations: "Explain this code: [selected code]"
-- Debug help: "Why am I getting this error: [error message]"
-- Code improvements: "How can I optimize this function?"
+### Available Settings
 
-## Extension Settings
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `codeExplorer.apiKey` | Your API key for the AI service | "" |
+| `codeExplorer.model` | The AI model to use (e.g., "gpt-4", "claude-3-opus") | "gpt-4" |
+| `codeExplorer.temperature` | Controls randomness (0.0 to 2.0) | 0.7 |
+| `codeExplorer.saveHistory` | Whether to save conversation history | true |
+| `codeExplorer.autoFormatCode` | Automatically format code blocks | true |
 
-This extension contributes the following settings:
+## 💡 Usage
+
+### Starting a New Chat
+
+1. Click the Code Explorer icon in the activity bar
+2. Type your message in the input field at the bottom
+3. Press Enter or click the send button (⇧+Enter for new line)
+
+### Keyboard Shortcuts
+
+| Command | Shortcut |
+|---------|----------|
+| Focus Chat Input | `Ctrl+Shift+P` then type "Focus Code Explorer Input" |
+| New Chat | `Ctrl+Shift+P` then type "Code Explorer: New Chat" |
+| Toggle Settings | `Ctrl+Shift+P` then type "Code Explorer: Toggle Settings" |
+
+### Example Prompts
+
+- **Code Explanation**: "Can you explain how this function works?"
+- **Debugging**: "I'm getting an error: 'Cannot read property X of undefined'"
+- **Code Generation**: "Write a React component that displays a todo list"
+- **Code Review**: "How can I improve this code's performance?"
+
+## 🧩 Advanced Features
+
+### Custom Instructions
+
+Set custom instructions to guide the AI's behavior:
+1. Open Settings (Ctrl+,)
+2. Search for "Code Explorer Custom Instructions"
+3. Enter your instructions (e.g., "Always respond in Spanish")
+
+### Code Actions
+
+Right-click on selected code to access context-aware actions:
+- Explain Code
+- Refactor
+- Add Documentation
+- Find Bugs
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with ❤️ using TypeScript and React
+- Powered by modern AI technologies
+- Special thanks to all contributors and users!
 
 * `github-ai-assistant.apiKey`: Your GitHub Personal Access Token
 * `github-ai-assistant.defaultModel`: The default AI model to use
