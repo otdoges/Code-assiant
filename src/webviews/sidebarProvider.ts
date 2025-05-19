@@ -139,6 +139,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     
     private _getHtmlForWebview(webview: vscode.Webview) {
         // Get path to our React app resources
+        const distUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'dist')
+        );
+        
         const reactAppUri = webview.asWebviewUri(
             vscode.Uri.joinPath(this._context.extensionUri, 'src', 'webviews', 'sidebar-react')
         );
@@ -180,7 +184,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 </script>
                 
                 <!-- Load the React application bundle -->
-                <script nonce="${nonce}" src="${reactAppUri}/index.js"></script>
+                <script nonce="${nonce}" src="${distUri}/index.js"></script>
             </body>
         </html>
     `;
